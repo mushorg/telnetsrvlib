@@ -1,12 +1,15 @@
-#!/usr/bin/python
+"""
 # Telnet handler concrete class using green threads
+"""
 
-import gevent, gevent.queue
+import gevent
+from gevent import queue, select
+from telnetsrv.utils import chr_py3
+from telnetsrv.telnetsrvlib import TelnetHandlerBase, command
 
-from telnetsrvlib import TelnetHandlerBase, command
 
 class TelnetHandler(TelnetHandlerBase):
-    "A telnet server handler using Gevent"
+    """A telnet server handler using Gevent"""
     def __init__(self, request, client_address, server):
         # Create a green queue for input handling
         self.cookedq = gevent.queue.Queue()
@@ -14,7 +17,7 @@ class TelnetHandler(TelnetHandlerBase):
         TelnetHandlerBase.__init__(self, request, client_address, server)
         
     def setup(self):
-        '''Called after instantiation'''
+        """Called after instantiation"""
         TelnetHandlerBase.setup(self)
         # Spawn a greenlet to handle socket input
         self.greenlet_ic = gevent.spawn(self.inputcooker)
@@ -24,11 +27,10 @@ class TelnetHandler(TelnetHandlerBase):
         gevent.sleep(0.5)
         
     def finish(self):
-        '''Called as the session is ending'''
+        """Called as the session is ending"""
         TelnetHandlerBase.finish(self)
         # Ensure the greenlet is dead
         self.greenlet_ic.kill()
-
 
     # -- Green input handling functions --
 
@@ -45,9 +47,9 @@ class TelnetHandler(TelnetHandlerBase):
 
     def inputcooker_store_queue(self, char):
         """Put the cooked data in the input queue (no locking needed)"""
-        if type(char) in [type(()), type([]), type("")]:
+        if type(char) in [type(()), type([]), type(b"")]:
             for v in char:
-                self.cookedq.put(v)
+                self.cookedq.put(chr_py3(v))
         else:
-            self.cookedq.put(char)
+            self.cookedq.put(chr_py3(char))
 

@@ -1,0 +1,4 @@
+gevent
+tox
+paramiko
+pytest
