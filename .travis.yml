@@ -1,6 +1,7 @@
 language: python
 python:
 - '3.5'
+- '3.6'
 virtualenv:
   system_site_packages: false
 sudo: false
@@ -28,7 +29,10 @@ install:
 - export PYTHONIOENCODING=UTF8
 - pip install coveralls
 - pip install -r requirements.txt
+- tox -e cov-init
 script:
-- tox
+- if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then tox -e py35; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then tox -e py36; fi
 after_success:
+- tox -e cov-report
 - coveralls
