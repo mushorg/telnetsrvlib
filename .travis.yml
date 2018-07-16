@@ -1,0 +1,38 @@
+language: python
+python:
+- '3.5'
+- '3.6'
+virtualenv:
+  system_site_packages: false
+sudo: false
+cache:
+- apt
+- pip
+before_install:
+- export TRAVIS_COMMIT_MSG="$(git log --format=%B --no-merges -n 1)"
+- REPO=`pwd`
+- echo $REPO
+- echo $TRAVIS_TAG
+- pwd
+addons:
+  apt:
+    packages:
+    - python3-pip
+    - git
+    - unzip
+    - python-dev
+    - libevent-dev
+    - libxml2
+    - libxml2-dev
+    - libxml2-utils
+install:
+- export PYTHONIOENCODING=UTF8
+- pip install coveralls
+- pip install -r requirements.txt
+- tox -e cov-init
+script:
+- if [[ $TRAVIS_PYTHON_VERSION == 3.5 ]]; then tox -e py35; fi
+- if [[ $TRAVIS_PYTHON_VERSION == 3.6 ]]; then tox -e py36; fi
+after_success:
+- tox -e cov-report
+- coveralls
